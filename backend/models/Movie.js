@@ -10,7 +10,8 @@ const Movie = db.define("Movie", {
     },
     tmdbId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        unique: true
     }
 })
 
