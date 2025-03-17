@@ -2,8 +2,17 @@ const express = require('express')
 
 const app = express()
 
+const port = 8080
+
 const conn = require('./db/conn')
 
+
+app.use(
+    express.urlencoded({
+        extended: true,
+    }),
+)
+  
 app.use(express.json())
 
 app.use(express.static('public'))
@@ -25,8 +34,8 @@ conn
         // force: true
     })
     .then(() => {
-        app.listen(3000, () => {
-            console.log("Listening to port 3000...")
+        app.listen(port, () => {
+            console.log(`Listening to port ${port}...`)
         })        
     })
     .catch((err) => console.log(err))
