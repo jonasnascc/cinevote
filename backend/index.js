@@ -4,16 +4,21 @@ const app = express()
 
 const conn = require('./db/conn')
 
-const User = require('./models/User')
-const Playlist = require('./models/Playlist')
-const PlaylistPos = require('./models/PlaylistPos')
-const Movie = require('./models/Movie')
-const Vote = require('./models/Vote')
-
 app.use(express.json())
 
 app.use(express.static('public'))
 
+const UserRoutes = require('./routes/UserRoutes')
+const PlaylistRoutes = require('./routes/PlaylistRoutes')
+const PlaylistPosRoutes = require('./routes/PlaylistPosRoutes')
+const MovieRoutes = require('./routes/MovieRoutes')
+const VoteRoutes = require('./routes/VoteRoutes')
+
+app.use('/users', UserRoutes)
+app.use('/playlists', PlaylistRoutes)
+app.use('/playlists/positions', PlaylistPosRoutes)
+app.use('/movies', MovieRoutes)
+app.use('/votes', VoteRoutes)
 
 conn
     .sync({
