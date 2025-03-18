@@ -2,19 +2,19 @@ const {DataTypes} = require("sequelize")
 
 const db = require("../db/conn")
 const PlaylistPos = require("./PlaylistPos")
+const User = require("./User")
 
 const Playlist = db.define('Playlist', {
     name: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     inviteCode: {
         type: DataTypes.STRING,
-        allowNull: false
+        unique: true
     },
     isPublic: {
         type: DataTypes.BOOLEAN,
-        allowNull: false
     },
     maxDuration: {
         type: DataTypes.STRING,
@@ -28,5 +28,6 @@ const Playlist = db.define('Playlist', {
 })
 
 Playlist.hasMany(PlaylistPos)
+Playlist.belongsTo(User)
 
 module.exports = Playlist
