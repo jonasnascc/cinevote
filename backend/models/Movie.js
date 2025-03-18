@@ -1,7 +1,7 @@
 const {DataTypes} = require("sequelize")
 
 const db = require("../db/conn")
-const PlaylistPos = require("./PlaylistPos")
+const PlaylistItem = require("./PlaylistItem")
 
 const Movie = db.define("Movie", {
     name: {
@@ -15,6 +15,6 @@ const Movie = db.define("Movie", {
     }
 })
 
-Movie.belongsToMany(PlaylistPos, {through: "movie_pos"})
+Movie.belongsToMany(PlaylistItem, {through: "movie_pos"})
 
 module.exports = Movie

@@ -3,13 +3,13 @@ const {DataTypes} = require("sequelize")
 const db = require("../db/conn")
 const Vote = require("./Vote")
 
-const PlaylistPos = db.define('Playlist_Position', {
-    value: {
+const PlaylistItem = db.define('Playlist_Item', {
+    position: {
         type: DataTypes.INTEGER,
         allowNull: false
     }
 })
 
-PlaylistPos.hasMany(Vote)
+PlaylistItem.hasMany(Vote)
 
-module.exports = PlaylistPos
+module.exports = PlaylistItem

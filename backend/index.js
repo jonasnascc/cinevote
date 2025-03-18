@@ -19,13 +19,13 @@ app.use(express.static('public'))
 
 const UserRoutes = require('./routes/UserRoutes')
 const PlaylistRoutes = require('./routes/PlaylistRoutes')
-const PlaylistPosRoutes = require('./routes/PlaylistPosRoutes')
+const PlaylistItemRoutes = require('./routes/PlaylistItemRoutes')
 const MovieRoutes = require('./routes/MovieRoutes')
 const VoteRoutes = require('./routes/VoteRoutes')
 
 app.use('/users', UserRoutes)
 app.use('/playlists', PlaylistRoutes)
-app.use('/playlists/positions', PlaylistPosRoutes)
+app.use('/playlists/positions', PlaylistItemRoutes)
 app.use('/movies', MovieRoutes)
 app.use('/votes', VoteRoutes)
 

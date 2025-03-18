@@ -1,6 +1,6 @@
-const PlaylistPos = require("../models/PlaylistPos")
+const PlaylistItem = require("../models/PlaylistItem")
 
-module.exports = class PlaylistPosController {
+module.exports = class PlaylistItemController {
     static async create(req, res) {
 
     }
