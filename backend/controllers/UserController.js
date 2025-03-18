@@ -1,8 +1,11 @@
+require("dotenv").config()
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 
 const User = require("../models/User")
 
 const createUserToken = require("../helpers/create-user-token")
+const getToken = require("../helpers/get-token")
 
 module.exports = class UserController {
     static async register(req, res) {
@@ -57,11 +60,56 @@ module.exports = class UserController {
     }
 
     static async login(req, res) {
-        
+        const {email, password} = req.body
+
+        if(!email) {
+            res.status(422).json({message: "Email can't be null or empty!"})
+            return
+        }
+
+        if(!password) {
+            res.status(422).json({message: "Password can't be null or empty!"})
+            return
+        }
+
+        const user = await User.findOne({where:{email:email}})
+
+        if(!user) {
+            return res.status(422)
+                .json({message: "Invalid user or password!"})
+        }
+
+        const checkPassword = await bcrypt.compare(password, user.password)
+
+        if(!checkPassword) {
+            return res.status(422)
+                .json({message: "Invalid user or password!"})
+        }
+
+        await createUserToken(user, req, res)
     }
 
     static async checkUser(req, res) {
-        
+        let currentUser;
+        if(req.headers.authorization) {
+            const token = getToken(req)
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || "")
+            
+            if(!decoded) {
+                res.status(500).json({message: "Server internal error!"})
+                return
+            }
+
+            currentUser = await User.findOne({
+                where:{id:decoded.id},
+                attributes: { exclude: ["password"] }
+            })
+        }
+        else {
+            currentUser = null
+        }
+
+        res.status(200).send(currentUser)
     }
 
     static async getUserById(req, res) {
