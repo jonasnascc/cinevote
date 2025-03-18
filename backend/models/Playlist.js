@@ -30,4 +30,6 @@ const Playlist = db.define('Playlist', {
 Playlist.hasMany(PlaylistItem)
 Playlist.belongsTo(User)
 
+User.hasMany(Playlist)
+
 module.exports = Playlist
