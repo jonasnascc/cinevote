@@ -15,6 +15,7 @@ const Movie = db.define("Movie", {
     }
 })
 
-Movie.belongsToMany(PlaylistItem, {through: "movie_pos"})
+Movie.hasMany(PlaylistItem)
+PlaylistItem.belongsTo(Movie)
 
 module.exports = Movie
