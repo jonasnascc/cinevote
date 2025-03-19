@@ -25,7 +25,7 @@ const VoteRoutes = require('./routes/VoteRoutes')
 
 app.use('/users', UserRoutes)
 app.use('/playlists', PlaylistRoutes)
-app.use('/playlists/positions', PlaylistItemRoutes)
+app.use('/playlists', PlaylistItemRoutes)
 app.use('/movies', MovieRoutes)
 app.use('/votes', VoteRoutes)
 
@@ -36,6 +36,6 @@ conn
     .then(() => {
         app.listen(port, () => {
             console.log(`Listening to port ${port}...`)
-        })        
+        })
     })
     .catch((err) => console.log(err))
