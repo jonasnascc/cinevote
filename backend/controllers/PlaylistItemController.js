@@ -2,7 +2,9 @@ const {Op} = require("sequelize")
 
 const PlaylistItem = require("../models/PlaylistItem")
 const Playlist = require("../models/Playlist")
+
 const Movie = require("../models/Movie")
+const Vote = require("../models/Vote")
 
 const getToken = require("../helpers/get-token")
 const getUserByToken = require("../helpers/get-user-by-token")
@@ -195,5 +197,31 @@ module.exports = class PlaylistItemController {
         const item = await playlistItem.update({PlaylistId: newPlaylist.id})
 
         return res.status(200).json({message: "Playlist item position successfully updated.", playlistItem: item})
+    }
+
+    static async vote(req, res) {
+        const user = await getUserByToken(getToken(req), res)
+        
+        const {playlistId, id, val}= req.params
+
+        const isPositive = parseInt(val)
+
+        if(isPositive !== 0 && isPositive !== 1) return res.status(522).json({message: "Vote value can only be 0 or 1."})
+
+        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+
+        if(!playlist) return res.status(404).json({message: "Playlist not found."})
+
+        const playlistItem = await PlaylistItem.findOne({where: {id, PlaylistId: playlist.id}})
+
+        if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
+
+        let vote = await Vote.findOne({where: {UserId:user.id, PlaylistItemId: playlistItem.id}});
+        
+        if(vote) await vote.update({isPositive})
+
+        else await Vote.create({isPositive, UserId:user.id, PlaylistItemId: playlistItem.id})
+        
+        return res.status(200).json({message: "Vote submited."})
     }
 }

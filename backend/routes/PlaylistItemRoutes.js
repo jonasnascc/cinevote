@@ -9,5 +9,6 @@ router.put("/:playlistId/items/:id", PlaylistItemController.update);
 router.delete("/:playlistId/items/:id", PlaylistItemController.delete);
 router.patch("/:playlistId/items/:id/updatePosition", PlaylistItemController.updatePlaylistItemPosition);
 router.patch("/:playlistId/items/:id/changePlaylist", PlaylistItemController.changePlaylist);
+router.post("/:playlistId/items/:id/vote/:val", PlaylistItemController.vote);
 
 module.exports = router;
