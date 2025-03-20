@@ -52,6 +52,18 @@ module.exports = class PlaylistController {
         return res.status(200).json({playlists})
     }
 
+    static async listByUser(req, res) {
+        const {userId:UserId} = req.params
+
+        const playlists = await Playlist
+            .findAll({
+                where: {UserId, isPublic:true},
+                attributes: { exclude: ["id", "UserId", 'createdAt', 'updatedAt'] }
+            })
+
+        return res.status(200).json({playlists})
+    }
+
     static async getById(req, res) {
         const id = req.params.id
 
@@ -60,6 +72,22 @@ module.exports = class PlaylistController {
         const playlist = await Playlist.findOne({
             where:{id, UserId: user.id}
         })
+
+        if(!playlist) return res.status(404).json({message: "Playlist not found."})
+
+        return res.status(200).json({playlist})
+    }
+
+    static async getByInviteCode(req, res) {
+        const user = await getUserByToken(getToken(req), res)
+        
+        const inviteCode = req.params.inviteCode
+
+        const playlist = await Playlist
+            .findOne({
+                where:{inviteCode, isPublic:true},
+                attributes: { exclude: ["id", "UserId", 'createdAt', 'updatedAt'] }
+            })
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
