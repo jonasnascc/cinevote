@@ -27,7 +27,6 @@ app.use('/users', UserRoutes)
 app.use('/playlists', PlaylistRoutes)
 app.use('/playlists', PlaylistItemRoutes)
 app.use('/movies', MovieRoutes)
-app.use('/votes', VoteRoutes)
 
 conn
     .sync({
