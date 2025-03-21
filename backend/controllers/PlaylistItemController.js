@@ -21,7 +21,7 @@ module.exports = class PlaylistItemController {
         if(!position) return res.status(522).json({message: "Position can't be null or empty"})
         if(!movieId && !movieTmdbId) return res.status(522).json({message: "You must define the movieId or/and movieTmdbId."})
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
         
         const posExists = await PlaylistItem.findOne({where: {position, PlaylistId: playlist.id}})
@@ -53,7 +53,7 @@ module.exports = class PlaylistItemController {
         
         const playlistId = req.params.playlistId
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
@@ -69,7 +69,7 @@ module.exports = class PlaylistItemController {
         
         const id = req.params.id
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
@@ -85,7 +85,7 @@ module.exports = class PlaylistItemController {
         
         const playlistId = req.params.playlistId
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
@@ -112,7 +112,7 @@ module.exports = class PlaylistItemController {
         if(position < 0) return res.status(522).json({message: "Position can't be less than zero"})
         if(!movieId && !movieTmdbId) return res.status(522).json({message: "You must define the movieId or/and movieTmdbId."})
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
@@ -122,7 +122,7 @@ module.exports = class PlaylistItemController {
 
         if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
 
-        const movieInPlaylist = (await PlaylistItem.findAll({where: {PlaylistId: playlist.id, MovieId: movieId}})).length > 0
+        const movieInPlaylist = (await PlaylistItem.findAll({where: {id :{[Op.ne]:[id]}, PlaylistId: playlist.id, MovieId: movieId}})).length > 0
         if(movieInPlaylist) return res.status(409).json({message: "This movie is already in the playlist."})
 
         let movie;
@@ -138,7 +138,7 @@ module.exports = class PlaylistItemController {
             PlaylistId: plistId ?? playlistItem.PlaylistId
         })
 
-        return res.status(200).json({message: "Playlist successfully updated."})
+        return res.status(200).json({message: "Playlist item successfully updated."})
         
     }
 
@@ -151,7 +151,7 @@ module.exports = class PlaylistItemController {
 
         const playlistId = req.params.playlistId
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
@@ -178,21 +178,21 @@ module.exports = class PlaylistItemController {
         const user = await getUserByToken(getToken(req), res)
 
         const playlistId = req.params.playlistId
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
         const newPlaylistId = req.body.playlistId
-        const newPlaylist = await Playlist.findOne({where:{id:newPlaylistId, UserId: user.id}})
+        const newPlaylist = await Playlist.findOne({where:{id:newPlaylistId, OwnerId: user.id}})
         if(!newPlaylist) return res.status(404).json({message: "New playlist not found."})
-
-        const movieInPlaylist = (await PlaylistItem.findAll({where: {PlaylistId: newPlaylist.id, MovieId: playlist.MovieId}})).length > 0
-        if(movieInPlaylist) return res.status(409).json({message: "This playlist item's movie is already in the playlist."})
 
         const id = req.params.id
 
         const playlistItem = await PlaylistItem.findOne({where: {id, PlaylistId: playlist.id}})
 
         if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
+
+        const movieInPlaylist = (await PlaylistItem.findAll({where: {PlaylistId: newPlaylist.id, MovieId: playlistItem.MovieId}})).length > 0
+        if(movieInPlaylist) return res.status(409).json({message: "This playlist item's movie is already in the playlist."})
 
         const item = await playlistItem.update({PlaylistId: newPlaylist.id})
 
@@ -208,7 +208,7 @@ module.exports = class PlaylistItemController {
 
         if(isPositive !== 0 && isPositive !== 1) return res.status(522).json({message: "Vote value can only be 0 or 1."})
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, UserId: user.id}})
+        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
@@ -216,11 +216,11 @@ module.exports = class PlaylistItemController {
 
         if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
 
-        let vote = await Vote.findOne({where: {UserId:user.id, PlaylistItemId: playlistItem.id}});
+        let vote = await Vote.findOne({where: {OwnerId:user.id, PlaylistItemId: playlistItem.id}});
         
         if(vote) await vote.update({isPositive})
 
-        else await Vote.create({isPositive, UserId:user.id, PlaylistItemId: playlistItem.id})
+        else await Vote.create({isPositive, OwnerId:user.id, PlaylistItemId: playlistItem.id})
         
         return res.status(200).json({message: "Vote submited."})
     }
