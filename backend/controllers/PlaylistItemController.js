@@ -5,9 +5,11 @@ const Playlist = require("../models/Playlist")
 
 const Movie = require("../models/Movie")
 const Vote = require("../models/Vote")
+const User = require("../models/User")
 
 const getToken = require("../helpers/get-token")
 const getUserByToken = require("../helpers/get-user-by-token")
+
 
 module.exports = class PlaylistItemController {
     static async create(req, res) {
@@ -15,20 +17,35 @@ module.exports = class PlaylistItemController {
 
         const {position, movieId, movieTmdbId} = req.body
 
-        const playlistId = req.params.playlistId
+        const {playlistId, inviteCode} = req.params
 
         if(position < 0) return res.status(522).json({message: "Position can't be less than zero"})
         if(!position) return res.status(522).json({message: "Position can't be null or empty"})
-        if(!movieId && !movieTmdbId) return res.status(522).json({message: "You must define the movieId or/and movieTmdbId."})
+        if(!movieId && !movieTmdbId) return res.status(522)
+            .json({message: "You must define the movieId or/and movieTmdbId."})
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
+        const whereArgs = {}
+        if(playlistId) whereArgs.id = playlistId
+        else if(inviteCode) whereArgs.inviteCode = inviteCode
+        const playlist = await Playlist.findOne({
+            where: whereArgs,
+            include: {model: User, as:"Guests"}
+        })
+
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
         
+        const isGuest = (await playlist.getGuests({where: {id: user.id}})).length > 0
+        const isOwner = playlist.OwnerId === user.id
+
+        if(!isGuest && !isOwner) return res.status(404).json({message: "Playlist not found."})
+        
         const posExists = await PlaylistItem.findOne({where: {position, PlaylistId: playlist.id}})
-        if(posExists) return res.status(409).json({message: "There is already a playlist item in this position."})
+        if(posExists) return res.status(409)
+            .json({message: "There is already a playlist item in this position."})
 
         const movieInPlaylist = (await PlaylistItem.findAll({where: {PlaylistId: playlist.id, MovieId: movieId}})).length > 0
-        if(movieInPlaylist) return res.status(409).json({message: "This movie is already in the playlist."})
+        if(movieInPlaylist) return res.status(409)
+            .json({message: "This movie is already in the playlist."})
 
         let movie;
         if(movieId) movie = await Movie.findOne({where: {id:movieId}})
@@ -39,7 +56,8 @@ module.exports = class PlaylistItemController {
         const item = {
             position,
             PlaylistId: playlist.id,
-            MovieId: movie.id
+            MovieId: movie.id,
+            UserId: user.id
         }
 
         const svdItem = await PlaylistItem.create(item)
