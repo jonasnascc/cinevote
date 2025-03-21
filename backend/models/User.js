@@ -16,5 +16,4 @@ const User = db.define('User', {
         allowNull: false
     }
 })
-
 module.exports = User

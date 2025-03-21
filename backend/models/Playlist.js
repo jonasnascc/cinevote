@@ -27,9 +27,13 @@ const Playlist = db.define('Playlist', {
     },
 })
 
-Playlist.hasMany(PlaylistItem)
-Playlist.belongsTo(User)
+Playlist.belongsTo(User, { as: "Owner", foreignKey: "OwnerId" });
 
-User.hasMany(Playlist)
+User.hasMany(Playlist, { as: "OwnedPlaylists", foreignKey: "OwnerId" });
+
+Playlist.belongsToMany(User, { through: "UserPlaylist", as: "Guests" });
+User.belongsToMany(Playlist, { through: "UserPlaylist", as: "GuestPlaylists" });
+
+Playlist.hasMany(PlaylistItem);
 
 module.exports = Playlist
