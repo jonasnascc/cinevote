@@ -5,6 +5,7 @@ const genAlphanumeric = require("../helpers/gen-alpha-numeric")
 const Playlist = require("../models/Playlist")
 const e = require("express")
 const User = require("../models/User")
+const { checkPlaylistExists } = require("../helpers/check-exists")
 
 module.exports = class PlaylistController {
     static async create(req, res) {
@@ -70,11 +71,8 @@ module.exports = class PlaylistController {
 
         const user = await getUserByToken(getToken(req), res)
 
-        const playlist = await Playlist.findOne({
-            where:{id, OwnerId: user.id}
-        })
-
-        if(!playlist) return res.status(404).json({message: "Playlist not found."})
+        const playlist = await checkPlaylistExists({id, owner:true}, req, res)
+        if(!playlist) return
 
         return res.status(200).json({playlist})
     }
@@ -84,13 +82,11 @@ module.exports = class PlaylistController {
         
         const inviteCode = req.params.inviteCode
 
-        const playlist = await Playlist
-            .findOne({
-                where:{inviteCode, isPublic:true},
-                attributes: { exclude: ["id", "OwnerId", 'createdAt', 'updatedAt'] }
-            })
-
-        if(!playlist) return res.status(404).json({message: "Playlist not found."})
+        const playlist = await checkPlaylistExists({
+            inviteCode,
+            attributes: { exclude: ["id", "OwnerId", 'createdAt', 'updatedAt'] }
+        }, req, res)
+        if(!playlist) return;
 
         return res.status(200).json({playlist})
     }
@@ -100,12 +96,9 @@ module.exports = class PlaylistController {
 
         const user = await getUserByToken(getToken(req), res)
 
-        const playlist = await Playlist.findOne({
-            where:{id, OwnerId: user.id}
-        })
+        const playlist = await ({id, owner:true}, req, res)
+        if(!playlist) return;
 
-        if(!playlist) return res.status(404).json({message: "Playlist not found."})
-        
         const delRows = await Playlist.destroy({where: {id, OwnerId: user.id}})
         
         if(delRows == 0) return res.status(500).json({message: "Internal server error, not able to delete playlist."})
@@ -118,11 +111,8 @@ module.exports = class PlaylistController {
 
         const user = await getUserByToken(getToken(req), res)
 
-        const svdPlaylist = await Playlist.findOne({
-            where:{id, OwnerId: user.id}
-        })
-
-        if(!svdPlaylist) return res.status(404).json({message: "Playlist not found."})
+        const svdPlaylist = await checkPlaylistExists({id, owner:true}, req, res)
+        if(!svdPlaylist) return;
 
         const {name, maxDuration, maxSize, isPublic, isRunning} = req.body
 
@@ -146,10 +136,8 @@ module.exports = class PlaylistController {
         
         const inviteCode = req.params.inviteCode
 
-        const playlist = await Playlist
-            .findOne({where:{inviteCode, isPublic:true}, include: {model: User, as: "Guests"}})
-
-        if(!playlist) return res.status(404).json({message: "Playlist not found."})
+        const playlist = await checkPlaylistExists({inviteCode, public:true}, req, res)
+        if(!playlist) return;
 
         if(playlist.OwnerId == user.id) return res.status(409).json({message: "A user can't join their own playlist."})
 
@@ -166,11 +154,9 @@ module.exports = class PlaylistController {
         
         const inviteCode = req.params.inviteCode
 
-        const playlist = await Playlist
-            .findOne({where:{inviteCode, isPublic:true}, include: {model: User, as: "Guests"}})
-
-        if(!playlist) return res.status(404).json({message: "Playlist not found."})
-
+        const playlist = await checkPlaylistExists({inviteCode, public:true}, req, res)
+        if(!playlist) return;
+        
         const guestsResp = await playlist.getGuests()
         
         const guests = guestsResp.map(({id, name, email}) => {return {id,name,email}})
@@ -183,11 +169,8 @@ module.exports = class PlaylistController {
 
         const user = await getUserByToken(getToken(req), res)
 
-        let playlist;
-        if(id) playlist = await Playlist.findOne({where:{id, OwnerId: user.id}})
-        else if(inviteCode) playlist = await Playlist.findOne({where:{inviteCode}})
-
-        if(!playlist) return res.status(404).json({message: "Playlist not found."})
+        const playlist = await checkPlaylistExists({id, owner:true}, req, res)
+        if(!playlist) return;
 
         let guests = await playlist.getGuests({where: {id: inviteCode ? user.id : guestId}})
 
