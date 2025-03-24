@@ -4,7 +4,7 @@ const getUserByToken = require("../helpers/get-user-by-token")
 const Playlist = require("../models/Playlist")
 
 async function checkPlaylistExists(opt, req, res) {
-    const {id, inviteCode, owner, public, attributes} = opt
+    const {id, inviteCode, owner, public, attributes, include} = opt
     
     const user = await getUserByToken(getToken(req), res)
 
@@ -16,7 +16,8 @@ async function checkPlaylistExists(opt, req, res) {
     if(public) whereArgs.isPublic = Boolean(public)
     const playlist = await Playlist.findOne({
         where:whereArgs,
-        attributes : attributes ?? {}
+        attributes : attributes ?? {},
+        include: include
     })
 
     if(!playlist) {
@@ -25,6 +26,10 @@ async function checkPlaylistExists(opt, req, res) {
     }
 
     return playlist
+}
+
+async function checkPlaylistItemExists(opt, req, res) {
+
 }
 
 module.exports = {

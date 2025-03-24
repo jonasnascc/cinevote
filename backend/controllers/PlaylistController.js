@@ -4,12 +4,12 @@ const genAlphanumeric = require("../helpers/gen-alpha-numeric")
 
 const Playlist = require("../models/Playlist")
 const e = require("express")
-const User = require("../models/User")
 const { checkPlaylistExists } = require("../helpers/check-exists")
 
 module.exports = class PlaylistController {
     static async create(req, res) {
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return
 
         const {name, maxDuration, maxSize, isPublic} = req.body
 
@@ -46,6 +46,7 @@ module.exports = class PlaylistController {
 
     static async list(req, res) {
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
 
         const playlists = await Playlist.findAll({where: {
             OwnerId : user.id
@@ -70,6 +71,7 @@ module.exports = class PlaylistController {
         const id = req.params.id
 
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
 
         const playlist = await checkPlaylistExists({id, owner:true}, req, res)
         if(!playlist) return
@@ -79,6 +81,7 @@ module.exports = class PlaylistController {
 
     static async getByInviteCode(req, res) {
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
         
         const inviteCode = req.params.inviteCode
 
@@ -95,6 +98,7 @@ module.exports = class PlaylistController {
         const id = req.params.id
 
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
 
         const playlist = await ({id, owner:true}, req, res)
         if(!playlist) return;
@@ -110,6 +114,7 @@ module.exports = class PlaylistController {
         const id = req.params.id
 
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
 
         const svdPlaylist = await checkPlaylistExists({id, owner:true}, req, res)
         if(!svdPlaylist) return;
@@ -133,6 +138,7 @@ module.exports = class PlaylistController {
 
     static async join(req, res) {
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
         
         const inviteCode = req.params.inviteCode
 
@@ -151,6 +157,7 @@ module.exports = class PlaylistController {
 
     static async listGuests(req, res) {
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
         
         const inviteCode = req.params.inviteCode
 
@@ -168,6 +175,7 @@ module.exports = class PlaylistController {
         const {id, guestId, inviteCode} = req.params
 
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return;
 
         const playlist = await checkPlaylistExists({id, owner:true}, req, res)
         if(!playlist) return;

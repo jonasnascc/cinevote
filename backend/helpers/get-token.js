@@ -1,7 +1,12 @@
 const getToken = (req) => {
-    const authHeader = req.headers["authorization"]
-    const token = authHeader && authHeader.replace("Bearer ", "")
-    return token;
+    try{
+        const authHeader = req.headers["authorization"]
+        const token = authHeader && authHeader.replace("Bearer ", "")
+        return token;
+    }
+    catch(error) {
+        console.log(error)
+    }
 }
 
 module.exports = getToken

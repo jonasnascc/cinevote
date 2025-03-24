@@ -9,11 +9,14 @@ const User = require("../models/User")
 
 const getToken = require("../helpers/get-token")
 const getUserByToken = require("../helpers/get-user-by-token")
+const { checkPlaylistExists } = require("../helpers/check-exists")
 
 
 module.exports = class PlaylistItemController {
     static async create(req, res) {
         const user = await getUserByToken(getToken(req), res)
+        if(!user) return
+
 
         const {position, movieId, movieTmdbId} = req.body
 
