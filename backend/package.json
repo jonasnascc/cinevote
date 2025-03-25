@@ -2,10 +2,10 @@
   "name": "cinevote-api",
   "version": "1.0.0",
   "description": "api for cinevote web application",
-  "main": "./src/index.js",
+  "main": "./src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./src/index.js localhost 3000"
+    "start": "nodemon ./src/server.js localhost 3000"
   },
   "author": "io.github.jonasnascc",
   "license": "ISC",

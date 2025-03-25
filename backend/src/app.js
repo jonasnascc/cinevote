@@ -27,13 +27,21 @@ app.use('/playlists', PlaylistRoutes)
 app.use('/playlists', PlaylistItemRoutes)
 app.use('/movies', MovieRoutes)
 
-conn
-    .sync({
-        // force: true
-    })
-    .then(() => {
-        app.listen(port, () => {
-            console.log(`Listening to port ${port}...`)
+async function startServer() {
+    await conn
+        .sync({
+            // force: true
         })
-    })
-    .catch((err) => console.log(err))
+        .then(() => {
+            app.listen(port, () => {
+                console.log(`Listening to port ${port}...`)
+            })
+        })
+        .catch((err) => console.log(err))
+}
+
+module.exports = {
+    app,
+    conn,
+    startServer
+}
