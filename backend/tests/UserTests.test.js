@@ -64,7 +64,23 @@ describe("POST /users/register" , () => {
             expect(response.statusCode).toBe(422)
         })
 
-        test("should respond with a 422 status code when some arguments are missing", async () => {
+        test("should respond with a 422 status code when password and passwordConfirm are differents", async () => {
+            await User.destroy({where:{email:USED_EMAILS[3]}})
+
+            const response = await request(app).post(REGISTER_ENDPOINT)
+                .send({
+                    name: "test_user",
+                    email: USED_EMAILS[3],
+                    password: "test12345",
+                    passwordConfirm: "wrong12345"
+                })
+
+            expect(response.statusCode).toBe(422)
+        })
+    })
+
+    describe("given user with a missing attribute", () => {
+        test("should respond with a 422 status code", async () => {
             await User.destroy({where:{email:USED_EMAILS[2]}})
             
             const user = {
@@ -92,7 +108,7 @@ describe("POST /users/register" , () => {
                     email: undefined
                 })
             expect(response.statusCode).toBe(422)
-
+            
             response = await request(app).post(REGISTER_ENDPOINT)
                 .send({
                     ...user,
@@ -105,20 +121,6 @@ describe("POST /users/register" , () => {
                     ...user,
                     passwordConfirm: undefined
                 })
-            expect(response.statusCode).toBe(422)
-        })
-
-        test("should respond with a 422 status code when password and passwordConfirm are differents", async () => {
-            await User.destroy({where:{email:USED_EMAILS[3]}})
-
-            const response = await request(app).post(REGISTER_ENDPOINT)
-                .send({
-                    name: "test_user",
-                    email: USED_EMAILS[3],
-                    password: "test12345",
-                    passwordConfirm: "wrong12345"
-                })
-
             expect(response.statusCode).toBe(422)
         })
     })
