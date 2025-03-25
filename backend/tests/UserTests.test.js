@@ -18,18 +18,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+    for(let email of USED_EMAILS) {
+        await User.destroy({where: {email}})
+    }
     await conn.close();
 });
-
-// beforeEach(async () => {
-//     await destroyUsedModels()
-// })
-
-// async function destroyUsedModels() {
-//     for(let email of USED_EMAILS) {
-//         await User.destroy({where: {email}})
-//     }
-// }
 
 describe("POST /users/register" , () => {
     describe("given name, email and password", () => {
