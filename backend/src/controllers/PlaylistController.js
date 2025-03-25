@@ -142,7 +142,7 @@ module.exports = class PlaylistController {
         
         const inviteCode = req.params.inviteCode
 
-        const playlist = await checkPlaylistExists({inviteCode, public:true}, req, res)
+        const playlist = await checkPlaylistExists({inviteCode, isPublic:true}, req, res)
         if(!playlist) return;
 
         if(playlist.OwnerId == user.id) return res.status(409).json({message: "A user can't join their own playlist."})
@@ -161,7 +161,7 @@ module.exports = class PlaylistController {
         
         const inviteCode = req.params.inviteCode
 
-        const playlist = await checkPlaylistExists({inviteCode, public:true}, req, res)
+        const playlist = await checkPlaylistExists({inviteCode, isPublic:true}, req, res)
         if(!playlist) return;
         
         const guestsResp = await playlist.getGuests()
