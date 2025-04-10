@@ -6,7 +6,8 @@ const {DB_HOST, DB_USERNAME, DB_PASSWORD} = process.env
 
 const sequelize = new Sequelize('cinevote_db', DB_USERNAME, DB_PASSWORD, {
     host: DB_HOST,
-    dialect: 'mysql'
+    dialect: 'mysql',
+    logging:false
 })
 
 try {
