@@ -13,10 +13,10 @@ module.exports = class PlaylistController {
 
         const {name, maxDuration, maxSize, isPublic} = req.body
 
-        if(!name) return res.status(522).json({message: "Name can't be null or empty!"})
+        if(!name) return res.status(422).json({message: "Name can't be null or empty!"})
 
         const inviteCode = genAlphanumeric(12)
-
+        
         const playlist = {
             name,
             maxDuration,
@@ -34,6 +34,7 @@ module.exports = class PlaylistController {
                     message: "Playlist created successfully.",
                     playlist: {id: svdPlaylist.id, ...playlist}
                 })
+    
             return 
         } catch(err) {
             console.log(err)
@@ -100,7 +101,7 @@ module.exports = class PlaylistController {
         const user = await getUserByToken(getToken(req), res)
         if(!user) return;
 
-        const playlist = await ({id, owner:true}, req, res)
+        const playlist = await checkPlaylistExists({id, owner:true}, req, res)
         if(!playlist) return;
 
         const delRows = await Playlist.destroy({where: {id, OwnerId: user.id}})
@@ -121,7 +122,7 @@ module.exports = class PlaylistController {
 
         const {name, maxDuration, maxSize, isPublic, isRunning} = req.body
 
-        if(name == "") return res.status(522).json({message: "Name can't be empty!"})
+        if(name == "") return res.status(422).json({message: "Name can't be empty!"})
 
         const playlist = {
             name: name,
