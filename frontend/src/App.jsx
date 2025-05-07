@@ -1,11 +1,13 @@
-import { useState } from 'react'
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
+import { HomePage } from './pages/Home/Home'
+import { PlaylistsPage } from './pages/Playlists/Playlists'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<h1>Hello world!</h1>} />
+      <Route path="/" element={<HomePage/>} />
+      <Route path="/playlists" element={<PlaylistsPage/>} />
     </Routes>
   )
 }
