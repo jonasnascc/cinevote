@@ -1,7 +1,6 @@
 const getToken = (req) => {
     try{
-        const authHeader = req.headers["authorization"]
-        const token = authHeader && authHeader.replace("Bearer ", "")
+        const token = req.cookies.token
         return token;
     }
     catch(error) {
