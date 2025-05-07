@@ -90,9 +90,9 @@ module.exports = class UserController {
     }
 
     static async checkUser(req, res) {
-        let currentUser;
-        if(req.headers.authorization) {
-            const token = getToken(req)
+        let currentUser = null;
+        const token = getToken(req)
+        if(token) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET || "")
             
             if(!decoded) {
@@ -104,12 +104,11 @@ module.exports = class UserController {
                 where:{id:decoded.id},
                 attributes: { exclude: ["password"] }
             })
-        }
-        else {
-            currentUser = null
+
+            return res.status(200).send(currentUser)
         }
 
-        res.status(200).send(currentUser)
+        return res.status(404).send({message:"User not found"})
     }
 
     static async getUserById(req, res) {
