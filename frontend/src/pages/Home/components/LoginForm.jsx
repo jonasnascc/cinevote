@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { AuthContext } from "../../../api/auth/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 export const LoginForm = () => {
-    const navigate = useNavigate()
-
+    const {login} = useContext(AuthContext)
     const [loginData, setLoginData] = useState({login: "", password: ""})
+
+    const navigate = useNavigate()
 
     const handleFormChange = (e, key) => {
         if(!Object.keys(loginData).includes(key)) return;
@@ -15,9 +17,11 @@ export const LoginForm = () => {
         })
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log(loginData)
+        if(await login(loginData))
+            navigate("/playlists")
+        else console.error("Could not authenticate")
     }
 
     const handleSignupLink = (e) => {

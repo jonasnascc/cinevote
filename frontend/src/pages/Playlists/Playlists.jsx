@@ -1,5 +1,10 @@
 import React from "react";
+import { RequireAuth } from "../../api/auth/RequireAuth";
 
 export const PlaylistsPage = () => {
-    return <h1>PlaylistsPage</h1>
+    return (
+        <RequireAuth redirect="/">
+            <h1>Playlists</h1>
+        </RequireAuth>
+    )
 }

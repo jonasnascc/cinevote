@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../../api/auth/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 export const SignupForm = () => {
+    const {signup} = useContext(AuthContext)
+
     const [signupData, setSignupData] = useState({
         username: "",
         email: "",
@@ -8,6 +12,8 @@ export const SignupForm = () => {
         passwordConfirm: ""
     })
     
+    const navigate = useNavigate()
+
     const handleFormChange = (e, key) => {
         if(!Object.keys(signupData).includes(key)) return;
 
@@ -17,20 +23,22 @@ export const SignupForm = () => {
         })
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log(signupData)
+        if(await signup(signupData))
+            navigate("/playlists")
+        else console.error("Could not sign up")
     }
 
     return(
         <form method="POST">
             <div>
-                <label htmlFor="login">Username: </label>
+                <label htmlFor="username">Username: </label>
                 <input 
                     type="text"
-                    name="login"
+                    name="username"
                     required
-                    onChange={(e) => handleFormChange(e, "login")}
+                    onChange={(e) => handleFormChange(e, "username")}
                 />
             </div>
             <div>
