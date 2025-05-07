@@ -11,14 +11,14 @@ const createUserToken = async (user, req, res) => {
         process.env.JWT_SECRET
     )
 
-    res.cookies('token', token, {
+    res.cookie('token', token, {
         httpOnly: true,
         sameSite: 'lax',
     })
 
     res.status(200).json({
         message: "You are authenticated!",
-        userId: user.id
+        user
     })
 }
 
