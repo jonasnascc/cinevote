@@ -10,6 +10,7 @@ const User = require("../models/User")
 const getToken = require("../helpers/get-token")
 const getUserByToken = require("../helpers/get-user-by-token")
 const { checkPlaylistExists } = require("../helpers/check-exists")
+const { getPlaylistItemDTO } = require("../helpers/get-dto")
 
 
 module.exports = class PlaylistItemController {
@@ -72,7 +73,7 @@ module.exports = class PlaylistItemController {
 
         const svdItem = await PlaylistItem.create(item)
 
-        return res.status(200).json({message: "Playlist item successfully added.", playlistItem: svdItem})
+        return res.status(200).json({message: "Playlist item successfully added.", playlistItem: getPlaylistItemDTO(svdItem, movie)})
 
     }
 
@@ -85,9 +86,12 @@ module.exports = class PlaylistItemController {
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
-        const playlistItems = await PlaylistItem.findAll({where: {PlaylistId: playlist.id}})
+        const playlistItems = await PlaylistItem.findAll({
+            where: {PlaylistId: playlist.id},
+            include: {model: Movie, as: "Movie"}
+        })
 
-        return res.status(200).json({playlistItems})
+        return res.status(200).json({playlistItems: playlistItems.map(item => getPlaylistItemDTO(item))})
     }
 
     static async getById(req, res) {
@@ -97,7 +101,10 @@ module.exports = class PlaylistItemController {
         
         const id = req.params.id
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
+        const playlist = await Playlist.findOne({
+            where:{id:playlistId, OwnerId: user.id},
+            include: {model: Movie, as: "Movie"}
+        })
 
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
@@ -105,7 +112,7 @@ module.exports = class PlaylistItemController {
 
         if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
 
-        return res.status(200).json({playlistItem})
+        return res.status(200).json({playlistItem: getPlaylistItemDTO(playlistItem)})
     }
 
     static async delete(req, res) {
@@ -185,7 +192,10 @@ module.exports = class PlaylistItemController {
 
         const id = req.params.id
 
-        const playlistItem = await PlaylistItem.findOne({where: {id, PlaylistId: playlist.id}})
+        const playlistItem = await PlaylistItem.findOne({
+            where: {id, PlaylistId: playlist.id},
+            include: {model: Movie, as: "Movie"}
+        })
 
         if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
 
@@ -199,7 +209,7 @@ module.exports = class PlaylistItemController {
 
         const item = await playlistItem.update({position: position})
 
-        return res.status(200).json({message: "Playlist item position successfully updated.", playlistItem: item})
+        return res.status(200).json({message: "Playlist item position successfully updated.", playlistItem: getPlaylistItemDTO(item, playlistItem.Movie)})
     }
 
     static async changePlaylist(req, res) {
@@ -215,7 +225,10 @@ module.exports = class PlaylistItemController {
 
         const id = req.params.id
 
-        const playlistItem = await PlaylistItem.findOne({where: {id, PlaylistId: playlist.id}})
+        const playlistItem = await PlaylistItem.findOne({
+            where: {id, PlaylistId: playlist.id},
+            include: {model: Movie, as: "Movie"}
+        })
 
         if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
 
@@ -224,7 +237,7 @@ module.exports = class PlaylistItemController {
 
         const item = await playlistItem.update({PlaylistId: newPlaylist.id})
 
-        return res.status(200).json({message: "Playlist item position successfully updated.", playlistItem: item})
+        return res.status(200).json({message: "Playlist item position successfully updated.", playlistItem: getPlaylistItemDTO(item, playlistItem.Movie)})
     }
 
     static async vote(req, res) {
