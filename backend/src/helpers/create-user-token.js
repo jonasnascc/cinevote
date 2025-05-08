@@ -16,6 +16,7 @@ const createUserToken = async (user, req, res) => {
         sameSite: 'lax',
     })
 
+    user.password = undefined
     res.status(200).json({
         message: "You are authenticated!",
         user

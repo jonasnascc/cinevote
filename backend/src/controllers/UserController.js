@@ -1,6 +1,7 @@
 require("dotenv").config()
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const {Op} = require("sequelize")
 
 const User = require("../models/User")
 
@@ -12,10 +13,10 @@ module.exports = class UserController {
         let missingKeys = []
 
         const {
-            name, email, password, passwordConfirm
+            username, email, password, passwordConfirm
         } = req.body;
 
-        if(!name) missingKeys.push("name");
+        if(!username) missingKeys.push("username");
         if(!email) missingKeys.push("email");
         if(!password) missingKeys.push("password");
         if(!passwordConfirm) missingKeys.push("passwordConfirm");
@@ -28,12 +29,15 @@ module.exports = class UserController {
 
         const userExists = await User.findOne({
             where: {
-                email : email
+                [Op.or]: [
+                    { email: email },
+                    { username: username }
+                ]
             }
-        })
+        });
 
         if (userExists) {
-            res.status(422).json({ message: 'Please, use another email!' })
+            res.status(422).json({ message: 'Please, use another email and/or username!' })
             return
         }
 
@@ -48,7 +52,7 @@ module.exports = class UserController {
         const passwordHash = await bcrypt.hash(password, salt)
 
         try {
-            const user = await User.create({name, email, password: passwordHash})
+            const user = await User.create({username, email, password: passwordHash})
             await createUserToken(user, req, res)
             return 
         } catch(err) {
@@ -60,10 +64,10 @@ module.exports = class UserController {
     }
 
     static async login(req, res) {
-        const {email, password} = req.body
+        const {login, password} = req.body
 
-        if(!email) {
-            res.status(422).json({message: "Email can't be null or empty!"})
+        if(!login) {
+            res.status(422).json({message: "Login can't be null or empty!"})
             return
         }
 
@@ -72,21 +76,30 @@ module.exports = class UserController {
             return
         }
 
-        const user = await User.findOne({where:{email:email}})
+        const user = await User.findOne({where:{
+            [Op.or] : [
+                {email: login},
+                {username: login}
+            ]}})
 
         if(!user) {
             return res.status(422)
-                .json({message: "Invalid user or password!"})
+                .json({message: "Invalid login or password!"})
         }
 
         const checkPassword = await bcrypt.compare(password, user.password)
 
         if(!checkPassword) {
             return res.status(422)
-                .json({message: "Invalid user or password!"})
+                .json({message: "Invalid login or password!"})
         }
 
         await createUserToken(user, req, res)
+    }
+
+    static async logout(req, res) {
+        res.clearCookie('token')
+        res.status(200).send({message:"You are not authenticated anymore"})
     }
 
     static async checkUser(req, res) {
