@@ -17,13 +17,20 @@ module.exports = class PlaylistItemController {
         const user = await getUserByToken(getToken(req), res)
         if(!user) return
 
-
-        const {position, movieId, movieTmdbId} = req.body
+        const {position:pos, movieId, movieTmdbId} = req.body
 
         const {playlistId, inviteCode} = req.params
 
+        let position = pos
         if(position < 0) return res.status(522).json({message: "Position can't be less than zero"})
-        if(!position) return res.status(522).json({message: "Position can't be null or empty"})
+        if(!position) {
+            const item = await PlaylistItem.findOne({
+                where: {PlaylistId:playlistId},
+                order: [['position', 'DESC']]
+            })
+            if(item) position = item.position + 1
+            else position = 1
+        }
         if(!movieId && !movieTmdbId) return res.status(522)
             .json({message: "You must define the movieId or/and movieTmdbId."})
 
