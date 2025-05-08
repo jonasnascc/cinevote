@@ -7,7 +7,7 @@ export const RequireAuth = ({children, redirect}) => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        if(redirect && !authenticated) navigate(redirect)
+        if(redirect && authenticated===false) navigate(redirect)
     }, [authenticated])
 
     if(!authenticated) return null
