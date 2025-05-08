@@ -26,6 +26,24 @@ const usePlaylists = () => ({
             .catch((err) => console.error(err))
 
         return response!==null ? response.data.playlist : null
+    },
+
+    addItem: async (playlistId, movieId, position) => {
+        let response = null;
+        await api.post(`playlists/${playlistId}/items`, {movieId, position})
+            .then((resp) => response = resp)
+            .catch((err) => console.error(err))
+
+        return response!==null ? response.data.playlistItem : null
+    },
+
+    listItems: async (playlistId) => {
+        let response = null;
+        await api.get(`playlists/${playlistId}/items`)
+            .then((resp) => response = resp)
+            .catch((err) => console.error(err))
+
+        return response!==null ? response.data.playlistItems : null
     }
 })
 
