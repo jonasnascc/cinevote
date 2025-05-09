@@ -11,6 +11,7 @@ const getToken = require("../helpers/get-token")
 const getUserByToken = require("../helpers/get-user-by-token")
 const { checkPlaylistExists } = require("../helpers/check-exists")
 const { getPlaylistItemDTO } = require("../helpers/get-dto")
+const { wilsonScore } = require("../helpers/utils")
 
 
 module.exports = class PlaylistItemController {
@@ -88,7 +89,10 @@ module.exports = class PlaylistItemController {
 
         const playlistItems = await PlaylistItem.findAll({
             where: {PlaylistId: playlist.id},
-            include: {model: Movie, as: "Movie"}
+            include: [
+                {model: Movie, as: "Movie"},
+                {model: Vote}
+            ]
         })
 
         return res.status(200).json({playlistItems: playlistItems.map(item => getPlaylistItemDTO(item))})
@@ -243,25 +247,70 @@ module.exports = class PlaylistItemController {
     static async vote(req, res) {
         const user = await getUserByToken(getToken(req), res)
         
-        const {playlistId, id, val}= req.params
+        const {playlistId, inviteCode, id, val}= req.params
 
         const isPositive = parseInt(val)
-
         if(isPositive !== 0 && isPositive !== 1) return res.status(522).json({message: "Vote value can only be 0 or 1."})
 
-        const playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
-
+        let playlist;
+        if(playlistId) {
+            playlist = await Playlist.findOne({where:{id:playlistId, OwnerId: user.id}})
+        }
+        else if(inviteCode) {
+            const pl = await Playlist.findOne({where:{inviteCode},include: {model: User, as:"Guests"}})
+            if(pl){ 
+                const isGuest = (await pl.getGuests({where: {id: user.id}})).length > 0
+                const isOwner = pl.OwnerId === user.id
+                if(isGuest || isOwner) playlist = pl
+            }
+        }
+        
         if(!playlist) return res.status(404).json({message: "Playlist not found."})
 
-        const playlistItem = await PlaylistItem.findOne({where: {id, PlaylistId: playlist.id}})
-
+        const playlistItem = await PlaylistItem.findOne({
+            where: {id, PlaylistId: playlist.id},
+            include: {model: Vote}
+        })
         if(!playlistItem) return res.status(404).json({message: "Playlist item not found."})
 
         let vote = await Vote.findOne({where: {OwnerId:user.id, PlaylistItemId: playlistItem.id}});
-        
-        if(vote) await vote.update({isPositive})
 
-        else await Vote.create({isPositive, OwnerId:user.id, PlaylistItemId: playlistItem.id})
+        if(vote) 
+            await vote.update({isPositive})
+        else 
+            await Vote.create({isPositive, OwnerId:user.id, PlaylistItemId: playlistItem.id})
+
+        const fetchItems = await PlaylistItem.findAll({
+            where: {
+                PlaylistId: playlist.id
+            },
+            order: [['position', 'ASC']],
+            include: {model: Vote}
+        })
+
+        const items = fetchItems.map(item => {
+            const votes = item.Votes.reduce((acum, current) => {
+                if(current.isPositive) acum[0] += 1
+                else acum[1] += 1
+                return acum
+            }, [0,0])
+
+            return {id:item.id, score: wilsonScore(votes[0], votes[1])}
+        })
+
+        const orderedItems = items.sort((a,b) => {
+            const diff = b.score - a.score
+            if(diff == 0) {
+                return new Date(b.createdAt) - new Date(a.createdAt)
+            }
+            return diff
+        })
+
+        let pos = 1;
+        for(let item of orderedItems) {
+            await PlaylistItem.update({position:pos}, {where: {id: item.id}})
+            pos += 1;
+        }
         
         return res.status(200).json({message: "Vote submited."})
     }

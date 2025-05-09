@@ -7,6 +7,6 @@ const Vote = db.define("Vote", {
     isPositive: DataTypes.BOOLEAN,
 })
 
-Vote.belongsTo(User)
+Vote.belongsTo(User, { as: "Owner", foreignKey: "OwnerId" })
 
 module.exports = Vote
