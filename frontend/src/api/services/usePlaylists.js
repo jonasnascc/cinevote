@@ -44,6 +44,15 @@ const usePlaylists = () => ({
             .catch((err) => console.error(err))
 
         return response!==null ? response.data.playlistItems : null
+    },
+
+    voteItem: async (inviteCode, itemId, value) => {
+        let response = null;
+        await api.post(`playlists/inviteCode/${inviteCode}/items/${itemId}/vote/${value ? 1: 0}`)
+            .then((resp) => response = resp)
+            .catch((err) => console.error(err))
+
+        return response!==null
     }
 })
 

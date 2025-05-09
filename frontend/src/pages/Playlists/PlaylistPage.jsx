@@ -8,11 +8,12 @@ export const PlaylistPage = ({playlistId}) => {
     const [playlist, setPlaylist] = useState()
     const [items, setItems] = useState([])
     const [openMovieForm, setOpenMovieForm] = useState(false)
-    const {findById, addItem, listItems} = usePlaylists()
+    const {findById, addItem, listItems, voteItem} = usePlaylists()
 
     const handleListItems = async () => {
         const items = await listItems(playlistId)
-        if(items) setItems(items)
+        const orderedByPos = items.sort((a,b) => a.position-b.position)
+        if(items) setItems(orderedByPos)
     }
 
     useState(() => {
@@ -38,6 +39,12 @@ export const PlaylistPage = ({playlistId}) => {
         }
     }
 
+    const handleVoteItem = async (itemId, value) => {
+        if(await voteItem(playlist.inviteCode, itemId, value)) {
+            await handleListItems()
+        }
+    }
+
     if(playlist) return (
         <>
         <div>
@@ -50,7 +57,7 @@ export const PlaylistPage = ({playlistId}) => {
 
         <button onClick={handleAddMovieBtn}>{openMovieForm ? "Close movie form" : "Add movie"}</button>
         {openMovieForm&&<MovieForm handleSubmit={handleCreateMovie}/>}
-        <PlaylistItems items={items}/>
+        <PlaylistItems items={items} handleVoteItem={handleVoteItem}/>
         </>
     )
     else return null
